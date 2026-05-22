@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AI Fashion Director</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <main class="app">
+      <section class="hero" aria-labelledby="app-title">
+        <div class="hero-copy">
+          <p class="eyebrow">Cinematic AI styling</p>
+          <h1 id="app-title">AI Fashion Director</h1>
+          <p class="subtitle">Generate cinematic outfits from movies</p>
+        </div>
+
+        <form class="search-panel" id="movie-form">
+          <label for="movie-input">Movie name</label>
+          <div class="input-row">
+            <input
+              id="movie-input"
+              type="text"
+              placeholder="Try Barbie, The Matrix, Clueless..."
+              autocomplete="off"
+            />
+            <button type="submit">Generate Outfits</button>
+          </div>
+        </form>
+        <div class="film-strip" aria-hidden="true">
+          <span></span>
+          <span></span>
+          <span></span>
+          <span></span>
+          <span></span>
+        </div>
+      </section>
+
+      <section class="trending" aria-labelledby="trending-title">
+        <div class="section-heading">
+          <p class="eyebrow">Now styling</p>
+          <h2 id="trending-title">Trending Movies</h2>
+        </div>
+
+        <div class="movie-row" id="movie-row" aria-label="Trending movie suggestions"></div>
+      </section>
+
+      <section class="results is-hidden" aria-live="polite">
+        <div class="section-heading results-header">
+          <p id="results-kicker"></p>
+          <h2 id="results-title"></h2>
+        </div>
+        <div class="outfit-grid" id="outfit-grid"></div>
+      </section>
+    </main>
+
+    <div class="lightbox" id="image-lightbox" aria-hidden="true" role="dialog" aria-label="Expanded outfit image">
+      <button class="lightbox-close" type="button" aria-label="Close image viewer">X</button>
+      <img class="lightbox-image" id="lightbox-image" alt="" />
+    </div>
+
+    <script src="config.js"></script>
+    <script src="script.js"></script>
+  </body>
+</html>
