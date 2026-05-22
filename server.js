@@ -4,46 +4,44 @@ const dotenv = require("dotenv");
 const path = require("path");
 const OpenAI = require("openai");
 
-dotenv.config({ quiet: true });
-dotenv.config({ path: path.join(__dirname, ".env"), quiet: true });
+dotenv.config();
 
 const app = express();
-const port = process.env.PORT || 3001;
-const publicDir = path.join(__dirname, "..");
+const port = process.env.PORT || 3000;
 
+// =========================
+// MIDDLEWARE
+// =========================
 app.use(cors());
 app.use(express.json());
-app.use(express.static("public"));
 
+// IMPORTANT: frontend folder MUST be "public"
+app.use(express.static(path.join(__dirname, "public")));
 
-
-app.get(["/", "/index.html"], (req, res) => {
-  res.sendFile(path.join(publicDir, "index.html"));
-});
-
-app.get(["/style.css", "/script.js", "/config.js"], (req, res) => {
-  res.sendFile(path.join(publicDir, req.path));
-});
-
-app.get("/health", (req, res) => {
-  res.json({ ok: true });
-});
-
+// =========================
+// OPENAI CLIENT
+// =========================
 const client = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
 
-/* =========================
-   SAFE AI IMAGE ROUTE
-========================= */
+// =========================
+// HEALTH CHECK (for Render)
+// =========================
+app.get("/health", (req, res) => {
+  res.json({ ok: true });
+});
+
+// =========================
+// IMAGE GENERATION ROUTE
+// =========================
 app.post("/generate-image", async (req, res) => {
   try {
     const { prompt } = req.body;
 
     if (!process.env.OPENAI_API_KEY) {
       return res.status(500).json({
-        error: "OpenAI API key is not configured",
-        details: "Set OPENAI_API_KEY in your hosting provider's environment variables."
+        error: "Missing OPENAI_API_KEY",
       });
     }
 
@@ -52,44 +50,42 @@ app.post("/generate-image", async (req, res) => {
     }
 
     const response = await client.images.generate({
-      model: process.env.OPENAI_IMAGE_MODEL || "gpt-image-1",
+      model: "gpt-image-1",
       prompt,
       size: "1024x1536",
-      quality: "low"
+      quality: "medium",
     });
 
     const image = response.data?.[0];
 
-    let imageUrl = null;
-
-    if (image?.b64_json) {
-      imageUrl = `data:image/png;base64,${image.b64_json}`;
-    }
-
-    if (image?.url) {
-      imageUrl = image.url;
-    }
+    const imageUrl = image?.url || null;
 
     if (!imageUrl) {
-      throw new Error("No image returned");
+      throw new Error("No image returned from OpenAI");
     }
 
     res.json({ imageUrl });
 
-  } catch (error) {
-    console.error("AI image generation failed:", error);
+  } catch (err) {
+    console.error("Image generation error:", err);
 
     res.status(500).json({
       error: "Image generation failed",
-      details: error?.message || "Unknown error"
+      details: err.message,
     });
   }
 });
 
-app.use((req, res) => {
-  res.sendFile(path.join(publicDir, "index.html"));
+// =========================
+// FRONTEND FALLBACK ROUTE
+// =========================
+app.get("*", (req, res) => {
+  res.sendFile(path.join(__dirname, "public", "index.html"));
 });
 
+// =========================
+// START SERVER
+// =========================
 app.listen(port, () => {
-  console.log(`Backend running on http://localhost:${port}`);
+  console.log(`Server running on port ${port}`);
 });
