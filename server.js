@@ -15,7 +15,7 @@ const port = process.env.PORT || 3000;
 app.use(cors());
 app.use(express.json());
 
-// IMPORTANT: frontend folder MUST be "public"
+// Serve frontend
 app.use(express.static(path.join(__dirname, "public")));
 
 // =========================
@@ -26,14 +26,14 @@ const client = new OpenAI({
 });
 
 // =========================
-// HEALTH CHECK (for Render)
+// HEALTH CHECK
 // =========================
 app.get("/health", (req, res) => {
   res.json({ ok: true });
 });
 
 // =========================
-// IMAGE GENERATION ROUTE
+// AI IMAGE ROUTE
 // =========================
 app.post("/generate-image", async (req, res) => {
   try {
@@ -58,16 +58,16 @@ app.post("/generate-image", async (req, res) => {
 
     const image = response.data?.[0];
 
-    const imageUrl = image?.url || null;
+    const imageUrl = image?.url;
 
     if (!imageUrl) {
-      throw new Error("No image returned from OpenAI");
+      throw new Error("No image returned");
     }
 
     res.json({ imageUrl });
 
   } catch (err) {
-    console.error("Image generation error:", err);
+    console.error("AI error:", err);
 
     res.status(500).json({
       error: "Image generation failed",
@@ -77,9 +77,9 @@ app.post("/generate-image", async (req, res) => {
 });
 
 // =========================
-// FRONTEND FALLBACK ROUTE
+// FRONTEND FALLBACK ROUTE (FIXED)
 // =========================
-app.get("*", (req, res) => {
+app.get(/.*/, (req, res) => {
   res.sendFile(path.join(__dirname, "public", "index.html"));
 });
 
@@ -89,3 +89,4 @@ app.get("*", (req, res) => {
 app.listen(port, () => {
   console.log(`Server running on port ${port}`);
 });
+
